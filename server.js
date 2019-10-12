@@ -30,34 +30,60 @@ mongoose.connect(MONGODB_URI, {
 });
 
 //! Routes **********************************************
-app.get('/search', function(req,res){
-    
-    axios.get("https://www.googleapis.com/books/v1/volumes?q=1984")
-    .then((response) => {
-        console.log("response", response.data)
-        res.send(response.data);
+
+app.get('/search', function(req, res) {
+  axios
+    .get('https://www.googleapis.com/books/v1/volumes?q=1984')
+    .then(response => {
+      console.log('response', response.data);
+      res.send(response.data);
     })
-    .catch((error) => {
-        console.log("error", error);
+    .catch(error => {
+      console.log('error', error);
+    });
+});
+
+// Route for getting all the saved books from the db
+app.get('/saved', function(req, res) {
+  // Grab every document in the Articles collection
+  Book.find({})
+    .then(function(dbBook) {
+      // If we were able to successfully find Articles, send them back to the client
+      res.json(dbBook);
     })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
 
-  });
+// Route to save a book
+app.post('/save', function(req, res) {
+  // Creates a new note, then uses the new note id to enter in the articles notes array
+  Book.create(req.body)
+    .then(function(dbBook) {
+      res.json(dbBook);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
 
-// Route for getting all Articles from the db
-app.get('/books', function(req, res) {
-    // Grab every document in the Articles collection
-    Book.find({})
-      .populate('notes')
-      .then(function(dbBook) {
-        // If we were able to successfully find Articles, send them back to the client
-        res.json(dbBook);
-      })
-      .catch(function(err) {
-        // If an error occurred, send it to the client
-        res.json(err);
-      });
-  });
-
+// Route to delete a saved book
+app.post('/delete/:bookID', function(req, res) {
+  console.log('bookID', req.params.bookID);
+  // Delete the note
+  Book.deleteOne({ _id: req.params.bookID })
+    .then(function(dbBook) {
+      // If we were able to successfully delete the note, send it back
+      res.json(dbBook);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
 
 //! Start the server **********************************************
 app.listen(PORT, function() {

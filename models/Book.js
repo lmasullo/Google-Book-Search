@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 // Using the Schema constructor, create a new BookSchema object
 const BookSchema = new Schema({
   title: String,
-  authors: String,
+  authors: [String],
   description: String,
   image: String,
   link: String,
